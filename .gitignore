@@ -1,0 +1,27 @@
+## autotools ##
+Makefile
+Makefile.in
+
+/autom4te.cache
+/aclocal.m4
+/compile
+/config.guess
+/config.h.in
+/config.sub
+/config.log
+/config.status
+/configure
+/depcomp
+/install-sh
+/missing
+
+.deps
+
+.libs
+/ltmain.sh
+/libtool
+
+## C ##
+*.lo
+*.o
+*.la
