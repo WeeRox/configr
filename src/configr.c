@@ -15,28 +15,6 @@ configr *configr_init()
 		return NULL;
 	}
 
-	if ((data->key = malloc(sizeof(configr_key))) == NULL)
-	{
-		return NULL;
-	}
-	else
-	{
-		if ((data->key->section = (char *) calloc(1, sizeof(char))) == NULL)
-		{
-			return NULL;
-		}
-
-		if ((data->key->name = (char *) calloc(1, sizeof(char))) == NULL)
-		{
-			return NULL;
-		}
-
-		if ((data->key->value = (char *) calloc(1, sizeof(char))) == NULL)
-		{
-			return NULL;
-		}
-	}
-
 	if ((data->comment = malloc((strlen(CONFIGROPT_COMMENT_DEFAULT) + 1) * sizeof(char))) == NULL)
 	{
 		return NULL;
@@ -54,6 +32,49 @@ configr *configr_init()
 	{
 		strcpy(data->assign, CONFIGROPT_ASSIGN_DEFAULT);
 	}
+
+	if ((data->file = (configr_file *) malloc(sizeof(configr_file))) == NULL)
+	{
+		return NULL;
+	}
+	else
+	{
+		data->file->sec_len = 1; /* 1 for global config keys */
+
+		if ((data->file->key_len = malloc(data->file->sec_len * sizeof(int))) == NULL)
+		{
+			return NULL;
+		}
+		else
+		{
+			*(data->file->key_len) = 0; /* no global keys on init */
+		}
+
+		if ((data->file->sections = malloc(data->file->sec_len * sizeof(char *))) == NULL)
+		{
+			return NULL;
+		}
+		else
+		{
+			if ((*(data->file->sections) = calloc(1, sizeof(char))) == NULL)
+			{
+				return NULL;
+			}
+		}
+
+		if ((data->file->keys = malloc(data->file->sec_len * sizeof(configr_key *))) == NULL)
+		{
+			return NULL;
+		}
+
+		if ((data->file->filename = calloc(1, sizeof(char))) == NULL)
+		{
+			return NULL;
+		}
+	}
+
+	data->last_sec = 0;
+	data->last_key = 0;
 
 	return data;
 }
@@ -143,7 +164,16 @@ int configr_parse_string(configr *configr, char *str)
 
 configr_key *configr_next_key(configr *configr)
 {
-	return parser_next_key(configr);
+	printf("last_sec: %i\n", configr->last_sec);
+	printf("last_key: %i\n", configr->last_key);
+
+	if (configr->last_sec == configr->file->sec_len - 1 && configr->last_key == *(configr->file->key_len + configr->last_sec) - 1)
+	{
+		printf("last!\n");
+		return NULL;
+	}
+
+	return NULL;
 }
 
 void configr_free(configr *configr)
@@ -158,26 +188,6 @@ void configr_free(configr *configr)
 		free(configr->rest_data);
 	}
 
-	if (configr->key)
-	{
-		if (configr->key->section)
-		{
-			free(configr->key->section);
-		}
-
-		if (configr->key->name)
-		{
-			free(configr->key->name);
-		}
-
-		if (configr->key->value)
-		{
-			free(configr->key->value);
-		}
-
-		free(configr->key);
-	}
-
 	if (configr->comment)
 	{
 		free(configr->comment);
@@ -186,6 +196,31 @@ void configr_free(configr *configr)
 	if (configr->assign)
 	{
 		free(configr->assign);
+	}
+
+	if (configr->file)
+	{
+		if (configr->file->key_len)
+		{
+			free(configr->file->key_len);
+		}
+
+		if (configr->file->sections)
+		{
+			free(configr->file->sections);
+		}
+
+		if (configr->file->keys)
+		{
+			free(configr->file->keys);
+		}
+
+		if (configr->file->filename)
+		{
+			free(configr->file->filename);
+		}
+
+		free(configr->file);
 	}
 
 	free(configr);
