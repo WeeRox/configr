@@ -5,6 +5,11 @@
 
 #include "configr.h"
 
+#ifndef HAVE_STRTOK_R
+extern char *configr_strtok_r(char *str, const char *delim, char **saveptr);
+#define strtok_r configr_strtok_r
+#endif /* HAVE_STRTOK_R */
+
 extern configr_key *parser_next_key(configr *configr);
 extern void parser_tokenize(configr *configr, char *line);
 int parser_line(configr *configr, char *line);
