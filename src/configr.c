@@ -73,8 +73,8 @@ configr *configr_init()
 		}
 	}
 
-	data->last_sec = 0;
-	data->last_key = 0;
+	data->curr_sec = 0;
+	data->curr_key = 0;
 
 	return data;
 }
@@ -164,16 +164,40 @@ int configr_parse_string(configr *configr, char *str)
 
 configr_key *configr_next_key(configr *configr)
 {
-	printf("last_sec: %i\n", configr->last_sec);
-	printf("last_key: %i\n", configr->last_key);
 
-	if (configr->last_sec == configr->file->sec_len - 1 && configr->last_key == *(configr->file->key_len + configr->last_sec) - 1)
+	if (configr->file->sec_len == 1 && *configr->file->key_len == 0)
 	{
-		printf("last!\n");
+		/* no keys exist */
+		configr->curr_key = 0;
+		configr->curr_sec = 0;
 		return NULL;
 	}
 
-	return NULL;
+	if (configr->curr_sec == configr->file->sec_len)
+	{
+			/* we have passed the last section */
+			/* reset variables to be able to loop keys again */
+			configr->curr_sec = 0;
+			configr->curr_key = 0;
+
+			return NULL;
+	}
+
+	configr_key *result;
+
+	if (configr->curr_key == *(configr->file->key_len + configr->curr_sec))
+	{
+		configr->curr_sec++;
+		configr->curr_key = 0;
+		result = configr_next_key(configr);
+	}
+	else
+	{
+		result = *(*(configr->file->keys + configr->curr_sec) + configr->curr_key);
+		configr->curr_key++;
+	}
+
+	return result;
 }
 
 void configr_free(configr *configr)

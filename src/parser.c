@@ -1,4 +1,5 @@
 #include "parser.h"
+#if 0
 
 configr_key *parser_next_key(configr *configr)
 {
@@ -157,3 +158,4 @@ char *parser_trim(char *token)
 
 	return trim;
 }
+#endif

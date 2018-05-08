@@ -14,11 +14,11 @@ typedef struct configr_key
 
 typedef struct configr_file
 {
-	int sec_len;				/* number of sections */
-	int *key_len;				/* number of keys in section n */
-	char **sections; 		/* name of section n */
-	configr_key **keys;	/* array of keys */
-	char *filename;			/* filename */
+	int sec_len;					/* number of sections */
+	int *key_len;					/* number of keys in section n */
+	char **sections; 			/* name of section n */
+	configr_key ***keys;	/* array of keys */
+	char *filename;				/* filename */
 } configr_file;
 
 typedef struct configr
@@ -31,8 +31,8 @@ typedef struct configr
 
 	configr_file *file;
 
-	int last_sec;
-	int last_key;
+	int curr_sec;
+	int curr_key;
 } configr;
 
 #define CONFIGROPT_COMMENT_DEFAULT "#;"	/* default comment chars */
