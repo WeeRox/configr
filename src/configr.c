@@ -62,7 +62,7 @@ configr *configr_init()
 			}
 		}
 
-		if ((data->file->keys = malloc(data->file->sec_len * sizeof(configr_key *))) == NULL)
+		if ((data->file->keys = malloc(data->file->sec_len * sizeof(configr_key **))) == NULL)
 		{
 			return NULL;
 		}
@@ -198,6 +198,60 @@ configr_key *configr_next_key(configr *configr)
 	}
 
 	return result;
+}
+
+int configr_add_key(configr *configr, char *section, char *name, char *value)
+{
+	int pos = configr->file->sec_len;
+	for (size_t i = 0; i < configr->file->sec_len; i++) {
+		if (strcmp(*(configr->file->sections + i), section) == 0)
+		{
+			pos = i;
+		}
+	}
+
+	if (pos == configr->file->sec_len)
+	{
+		/* create a new section */
+		configr->file->sections = realloc(configr->file->sections, (configr->file->sec_len + 1) * sizeof(char *));
+		if (configr->file->sections == NULL)
+		{
+			fprintf(stderr, "Error reallocating memory\n");
+			exit(1);
+		}
+
+		*(configr->file->sections + configr->file->sec_len) = malloc((strlen(section) + 1) * sizeof(char));
+		strcpy(*(configr->file->sections + configr->file->sec_len), section);
+
+		configr->file->keys = realloc(configr->file->keys, (configr->file->sec_len + 1) * sizeof(configr_key **));
+		if (configr->file->keys == NULL)
+		{
+			fprintf(stderr, "Error reallocating memory\n");
+			exit(1);
+		}
+
+		configr->file->sec_len += 1;
+	}
+
+	configr_key *new = malloc(sizeof(configr_key));
+	new->section = *(configr->file->sections + pos);
+
+	new->name = malloc((strlen(name) + 1) * sizeof(char));
+	strcpy(new->name, name);
+
+	new->value = malloc((strlen(value) + 1) * sizeof(char));
+	strcpy(new->value, value);
+
+	*(configr->file->keys + pos) = realloc(*(configr->file->keys + pos), (*(configr->file->key_len + pos) + 1) * sizeof(configr_key *));
+	if (*(configr->file->keys + pos) == NULL)
+	{
+		fprintf(stderr, "Error reallocating memory\n");
+		exit(1);
+	}
+
+	*(*(configr->file->keys + pos) + *(configr->file->key_len + pos)) = new;
+
+	return 0;
 }
 
 void configr_free(configr *configr)

@@ -56,5 +56,6 @@ extern int configr_parse_file(configr *configr, char *filename);
 extern int configr_parse_string(configr *configr, char *str);
 
 extern configr_key *configr_next_key(configr *configr);
+extern int configr_add_key(configr *configr, char *section, char *name, char *value);
 
 #endif /* __CONFIGR_CONFIGR_H */
