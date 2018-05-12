@@ -66,6 +66,13 @@ configr *configr_init()
 		{
 			return NULL;
 		}
+		else
+		{
+			if ((*data->file->keys = malloc(*data->file->key_len * sizeof(configr_key *))) == NULL)
+			{
+				return NULL;
+			}
+		}
 
 		if ((data->file->filename = calloc(1, sizeof(char))) == NULL)
 		{
@@ -213,6 +220,8 @@ int configr_add_key(configr *configr, char *section, char *name, char *value)
 	if (pos == configr->file->sec_len)
 	{
 		/* create a new section */
+
+		/* add the new section name */
 		configr->file->sections = realloc(configr->file->sections, (configr->file->sec_len + 1) * sizeof(char *));
 		if (configr->file->sections == NULL)
 		{
@@ -223,12 +232,20 @@ int configr_add_key(configr *configr, char *section, char *name, char *value)
 		*(configr->file->sections + configr->file->sec_len) = malloc((strlen(section) + 1) * sizeof(char));
 		strcpy(*(configr->file->sections + configr->file->sec_len), section);
 
+		/* add new section to key array */
 		configr->file->keys = realloc(configr->file->keys, (configr->file->sec_len + 1) * sizeof(configr_key **));
 		if (configr->file->keys == NULL)
 		{
 			fprintf(stderr, "Error reallocating memory\n");
 			exit(1);
 		}
+
+		/* add section to key length */
+		configr->file->key_len = realloc(configr->file->key_len, (configr->file->sec_len + 1) * sizeof(int));
+		*(configr->file->key_len + configr->file->sec_len) = 0;
+
+		/* malloc size of new section (0) */
+		*(configr->file->keys + configr->file->sec_len) = malloc(*(configr->file->key_len + configr->file->sec_len) * sizeof(configr_key *));
 
 		configr->file->sec_len += 1;
 	}
@@ -243,6 +260,7 @@ int configr_add_key(configr *configr, char *section, char *name, char *value)
 	strcpy(new->value, value);
 
 	*(configr->file->keys + pos) = realloc(*(configr->file->keys + pos), (*(configr->file->key_len + pos) + 1) * sizeof(configr_key *));
+
 	if (*(configr->file->keys + pos) == NULL)
 	{
 		fprintf(stderr, "Error reallocating memory\n");
@@ -250,6 +268,7 @@ int configr_add_key(configr *configr, char *section, char *name, char *value)
 	}
 
 	*(*(configr->file->keys + pos) + *(configr->file->key_len + pos)) = new;
+	*(configr->file->key_len + pos) += 1;
 
 	return 0;
 }
