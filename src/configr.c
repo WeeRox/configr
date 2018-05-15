@@ -151,6 +151,8 @@ int configr_parse_stream(configr *configr, FILE *stream)
 
 	free(content);
 
+	parse_data(configr);
+
 	return 0;
 }
 
@@ -165,6 +167,8 @@ int configr_parse_string(configr *configr, char *str)
 	configr->data = realloc(configr->data, (strlen(str) + 1) * sizeof(char));
 	strcpy(configr->data, str);
 	configr->rest_data = configr->data;
+
+	parse_data(configr);
 
 	return 0;
 }

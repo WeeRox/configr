@@ -1,24 +1,30 @@
 #include "parser.h"
-#if 0
 
-configr_key *parser_next_key(configr *configr)
+int parse_data(configr *configr)
 {
 	char *line;
 
+	parser_data *parser_data = malloc(sizeof(parser_data));
+	parser_data->section = calloc(1, sizeof(char));
+
 	while ((line = strtok_r(configr->rest_data, "\n", &configr->rest_data)))
 	{
-		int result = parser_line(configr, parser_trim(line));
+		/* TODO: multiline support */
 
-		if (result == 1)
-		{
-			continue;
-		}
+		int result = parse_line(configr, parser_data, parser_trim(line));
 	}
 
-	return NULL;
+	return 0;
 }
 
-int parser_line(configr *configr, char *line)
+/*
+	parses line
+	return 0 on success
+	return 1 on empty or commented line
+	return 2 on section
+	return 3 on invalid key
+*/
+int parse_line(configr *configr, parser_data *parser_data, char *line)
 {
 	/* check if line is empty or is a comment */
 	if (line[0] == '\n' || strchr(configr->comment, line[0]))
@@ -27,23 +33,14 @@ int parser_line(configr *configr, char *line)
 	}
 
 	if (line[0] == '[') {
-		configr->key->section = parser_section(line);
-		configr->key->name = NULL;
-		configr->key->value = NULL;
+		parser_data->section = parse_section(line);
+		return 2;
 	}
 
-	parser_tokenize(configr, line);
-	if (configr->key->name == NULL)
-	{
-		return 1;
-	}
-	else
-	{
-		return configr->key;
-	}
+	return parser_tokenize(configr, parser_data, line);
 }
 
-char *parser_section(char *line)
+char *parse_section(char *line)
 {
 	char *section = calloc(1, sizeof(char));
 
@@ -65,7 +62,12 @@ char *parser_section(char *line)
 	return NULL;
 }
 
-void parser_tokenize(configr *configr, char *line)
+/*
+	tokenizes line
+	return 0 on success
+	return 2 on empty name or value
+*/
+int parser_tokenize(configr *configr, parser_data *parser_data, char *line)
 {
 	/* parse name and value */
 	int assign = 0;
@@ -102,25 +104,18 @@ void parser_tokenize(configr *configr, char *line)
 		}
 	}
 
+	name = parser_trim(name);
+	value = parser_trim(value);
+
 	if (strlen(name) == 0 || strlen(value) == 0)
 	{
-		configr->key->name = NULL;
-		configr->key->value = NULL;
-		/* TODO: return -1? */
+		return 1;
 	}
 	else
 	{
-		name = parser_trim(name);
-		configr->key->name = realloc(configr->key->name, (strlen(name) + 1) * sizeof(char));
-		strcpy(configr->key->name, name);
-
-		value = parser_trim(value);
-		configr->key->value = realloc(configr->key->value, (strlen(value) + 1) * sizeof(char));
-		strcpy(configr->key->value, value);
+		configr_add_key(configr, parser_data->section, name, value);
+		return 0;
 	}
-
-	free(name);
-	free(value);
 }
 
 char *parser_trim(char *token)
@@ -158,4 +153,3 @@ char *parser_trim(char *token)
 
 	return trim;
 }
-#endif
