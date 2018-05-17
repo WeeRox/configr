@@ -277,6 +277,30 @@ int configr_add_key(configr *configr, char *section, char *name, char *value)
 	return 0;
 }
 
+configr_key *configr_get_key(configr *configr, char *section, char *name)
+{
+	int pos = -1;
+	for (size_t i = 0; i < configr->file->sec_len; i++) {
+		if (strcmp(*(configr->file->sections + i), section) == 0)
+		{
+			pos = i;
+		}
+	}
+
+	if (pos != -1)
+	{
+		for (size_t i = 0; i < *(configr->file->key_len + pos); i++) {
+			configr_key *key = *(*(configr->file->keys + pos) + i);
+			if (strcmp(key->name, name) == 0)
+			{
+				return key;
+			}
+		}
+	}
+
+	return NULL;
+}
+
 void configr_free(configr *configr)
 {
 	if (configr->data)
