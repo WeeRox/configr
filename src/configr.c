@@ -229,8 +229,7 @@ int configr_add_key(configr *configr, char *section, char *name, char *value)
 		configr->file->sections = realloc(configr->file->sections, (configr->file->sec_len + 1) * sizeof(char *));
 		if (configr->file->sections == NULL)
 		{
-			fprintf(stderr, "Error reallocating memory\n");
-			exit(1);
+			return -1;
 		}
 
 		*(configr->file->sections + configr->file->sec_len) = malloc((strlen(section) + 1) * sizeof(char));
@@ -240,8 +239,7 @@ int configr_add_key(configr *configr, char *section, char *name, char *value)
 		configr->file->keys = realloc(configr->file->keys, (configr->file->sec_len + 1) * sizeof(configr_key **));
 		if (configr->file->keys == NULL)
 		{
-			fprintf(stderr, "Error reallocating memory\n");
-			exit(1);
+			return -1;
 		}
 
 		/* add section to key length */
@@ -267,8 +265,7 @@ int configr_add_key(configr *configr, char *section, char *name, char *value)
 
 	if (*(configr->file->keys + pos) == NULL)
 	{
-		fprintf(stderr, "Error reallocating memory\n");
-		exit(1);
+		return -1;
 	}
 
 	*(*(configr->file->keys + pos) + *(configr->file->key_len + pos)) = new;
